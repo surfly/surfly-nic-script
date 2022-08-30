@@ -1,3 +1,19 @@
+/*
+Surfly NIC integration
+
+Expected variables
+
+    scaleDroneChannelId
+    nicBusNumber
+    nicChatPOC
+    clusterNiC
+    surflyWidgetKey
+    videoSignalerURL
+    chatSignalerURL
+    surflyModalTitle
+    surflyModalBody
+*/
+
 let NicHomeURL = "https://home-" + clusterNiC + ".nice-incontact.com";
 
 var chatSrc = document.createElement("script");
@@ -23,127 +39,39 @@ chatSrc.onload = function () {
 }
 
 
-var nicChatContactId;
-
-function signalContact(contactId, followerLink, sessionPin, type)
-{
-    var actionURL = chatSignalerURL;
-
-	ctdURL = actionURL;
-    ctdURL += '&p1=';
-    ctdURL += contactId;
-    ctdURL += '&p2=';
-    ctdURL += followerLink;
-    ctdURL += '&p3=';
-    ctdURL += sessionPin;
-    ctdURL += '&p4=';
-    ctdURL += type;
-
-	var hiddenAction = document.createElement('iframe');
-
-	hiddenAction.setAttribute('id', 'hiddenAction');
-    hiddenAction.style.width     = '0';
-    hiddenAction.style.height   = '0';
-    hiddenAction.style.border   = '0';
-    hiddenAction.style.border   = 'none';
-    hiddenAction.style.position = 'absolute';
-    hiddenAction.src            = ctdURL;
-
-	document.body.appendChild(hiddenAction);
-
-	setTimeout(function() {
-      var hiddenFrame = document.getElementById("hiddenAction");
-      hiddenFrame.parentNode.removeChild(hiddenFrame);
-    },1500);
+function signalContact(contactId, followerLink, sessionPin, type) {
+    var url = new URL(chatSignalerURL);
+    url.searchParams.set('p1', contactId);
+    url.searchParams.set('p2', followerLink);
+    url.searchParams.set('p3', sessionPin);
+    url.searchParams.set('p4', type);
+    fetch(url);
 }
 
 
-function updateStudioScript(contactId, type)
-{
-    var actionURL = chatSignalerURL;
-
-	ctdURL = actionURL;
-    ctdURL += '&p1=';
-    ctdURL += contactId;
-    ctdURL += '&p2=NA';
-    ctdURL += '&p3=';
-    ctdURL += 'sessionended-';
-    ctdURL += type;
-    ctdURL += '&p4=NA';
-
-	var hiddenAction = document.createElement('iframe');
-
-	hiddenAction.setAttribute('id', 'hiddenAction');
-    hiddenAction.style.width    = '0';
-    hiddenAction.style.height   = '0';
-    hiddenAction.style.border   = '0';
-    hiddenAction.style.border   = 'none';
-    hiddenAction.style.position = 'absolute';
-    hiddenAction.src            = ctdURL;
-    document.body.appendChild(hiddenAction);
-
-	setTimeout(function() {
-      var hiddenFrame = document.getElementById("hiddenAction");
-      hiddenFrame.parentNode.removeChild(hiddenFrame);
-    },1500);
+function updateStudioScript(contactId, type) {
+    var url = new URL(chatSignalerURL);
+    url.searchParams.set('p1', contactId);
+    url.searchParams.set('p2', 'NA');
+    url.searchParams.set('p3', `sessionended-${type}`);
+    url.searchParams.set('p4', 'NA');
+    fetch(url);
 }
 
 
-function signalWorkItem(followerLink)
-{
-    var actionURL = videoSignalerURL;
-
-	ctdURL = actionURL;
-    ctdURL += '&p1=';
-    ctdURL += 'startWorkItem';
-    ctdURL += '&p2=';
-    ctdURL += followerLink;
-
-	var hiddenAction = document.createElement('iframe');
-
-	hiddenAction.setAttribute('id', 'hiddenAction');
-    hiddenAction.style.width    = '0';
-    hiddenAction.style.height   = '0';
-    hiddenAction.style.border   = '0';
-    hiddenAction.style.border   = 'none';
-    hiddenAction.style.position = 'absolute';
-    hiddenAction.src            = ctdURL;
-
-	document.body.appendChild(hiddenAction);
-
-	setTimeout(function() {
-      var hiddenFrame = document.getElementById("hiddenAction");
-      hiddenFrame.parentNode.removeChild(hiddenFrame);
-    },1500);
+function signalWorkItem(followerLink) {
+    var url = new URL(videoSignalerURL);
+    url.searchParams.set('p1', 'startWorkItem');
+    url.searchParams.set('p2', followerLink);
+    fetch(url);
 }
 
 
-function endWorkItem(contactId)
-{
-    var actionURL = videoSignalerURL;
-
-	ctdURL = actionURL;
-    ctdURL += '&p1=';
-    ctdURL += 'endWorkItem';
-    ctdURL += '&p2=';
-    ctdURL += contactId;
-
-	var hiddenAction = document.createElement('iframe');
-
-	hiddenAction.setAttribute('id', 'hiddenAction');
-    hiddenAction.style.width    = '0';
-    hiddenAction.style.height   = '0';
-    hiddenAction.style.border   = '0';
-    hiddenAction.style.border   = 'none';
-    hiddenAction.style.position = 'absolute';
-
-	hiddenAction.src = ctdURL;
-
-	document.body.appendChild(hiddenAction);
-    setTimeout(function() {
-      var hiddenFrame = document.getElementById("hiddenAction");
-      hiddenFrame.parentNode.removeChild(hiddenFrame);
-    },1500);
+function endWorkItem(contactId) {
+    var url = new URL(videoSignalerURL);
+    url.searchParams.set('p1', 'endWorkItem');
+    url.searchParams.set('p2', contactId);
+    fetch(url);
 }
 
 
@@ -155,44 +83,8 @@ function createVideochatSession()
     var surflyMetadata = {"name": "Customer"};
 
 	videochatSession.on("session_created", function(session, event) {
-
-		var surflyFollowerLink = session.followerLink;
-
 		console.log('Waiting for confirmation');
         session.startLeader(null, surflyMetadata);
-		
-        if (surflyModalBody) {
-			var observer = new MutationObserver(function (mutations, observer) {
-				mutations.forEach(function (mutation) {
-					[].filter.call(mutation.addedNodes, function (node) {
-						return node.nodeName == 'DIV';
-					}).forEach(function (node) {
-						if (node.matches('.surfly-modal.fadein')) {
-							observer.disconnect();
-						  
-							var modalBody          = node.querySelector('.body').getElementsByTagName("P")[0];
-							modalBody.innerHTML    = surflyModalBody;
-							var surflyAcceptButton = node.querySelector('.accept');
-
-							function surflyModalCancel(event) {
-								createVideochatButton();
-								console.log('cancel button was clicked, removing listeners');
-								surflyAcceptButton.removeEventListener('click', surflyModalAccept);
-							}
-
-
-							function surflyModalAccept(event) {
-								console.log('accept button was clicked, removing listeners');
-								surflyAcceptButton.removeEventListener('click', surflyModalAccept);   
-							}
-							surflyAcceptButton.addEventListener('click', surflyModalAccept);
-						}
-					});
-				});
-			});
-			observer.observe(document.getElementById("surfly-api-frame").contentWindow.document.body, { childList: true, subtree: true });
-		}
-		
     }).on("session_started", function(session, event) {
         var surflySessionPin = session.pin;
         var surflyFollowerLink = session.followerLink;
@@ -204,7 +96,7 @@ function createVideochatSession()
     }).on("session_ended", function(session, event) {
         console.log("Videochat session ended");
         createVideochatButton();
-        endWorkItem(nicVideochatContactId);
+        endWorkItem(window.nicVideochatContactId);
     }).create();
 }
 
@@ -230,7 +122,6 @@ function createSurflySession(contactId, inviteType)
   if (inviteType == 'cobrowse') {
      var regularSession = Surfly.session({block_until_agent_joins: false});
      regularSession.on("session_created", function(session, event) {
-        var surflyFollowerLink = session.followerLink;
         console.log('Waiting for confirmation');
         session.startLeader(null, surflyMetadata);
      }).on("session_started", function(session, event) {
@@ -245,7 +136,7 @@ function createSurflySession(contactId, inviteType)
         console.log('Contact ID: ' + contactId);
      }).on("session_ended", function(session, event) {
         console.log("Regular session ended, updating Studio");
-        updateStudioScript(nicChatContactId, 'cobrowse');
+        updateStudioScript(contactId, 'cobrowse');
         createVideochatButton();
      }).create();
   } else if (inviteType == 'videochat') {
@@ -253,25 +144,8 @@ function createSurflySession(contactId, inviteType)
                                             videochat_autostart: true,
                                             videochat_start_fullscreen: true });
     regularSession.on("session_created", function(session, event) {
-       var surflyFollowerLink = session.followerLink;
        console.log('Waiting for confirmation');
        session.startLeader(null, surflyMetadata);
-       
-	   var observer = new MutationObserver(function (mutations, observer) {
-            mutations.forEach(function (mutation) {
-              [].filter.call(mutation.addedNodes, function (node) {
-                return node.nodeName == 'DIV';
-              }).forEach(function (node) {
-                if (node.matches('.surfly-modal.fadein')) {
-                  observer.disconnect();
-                  var modalBody = node.querySelector('.body').getElementsByTagName("P")[0];
-                  //modalTitle.innerHTML = surflyModalTitle;
-                  modalBody.innerHTML = surflyModalBody;
-                }
-              });
-            });
-          });
-          observer.observe(document.getElementById("surfly-api-frame").contentWindow.document.body, { childList: true, subtree: true });
     }).on("session_started", function(session, event) {
        var surflySessionPin = session.pin;
        var surflyFollowerLink = session.followerLink;
@@ -285,7 +159,7 @@ function createSurflySession(contactId, inviteType)
        console.log('Contact ID: ' + contactId);
     }).on("session_ended", function(session, event) {
        console.log("Regular session ended, updating Studio");
-       updateStudioScript(nicChatContactId, 'videochat');
+       updateStudioScript(contactId, 'videochat');
        createVideochatButton();
     }).create();
   }
@@ -304,7 +178,8 @@ function loadSurfly()
                        private_session           : true,
                        require_password          : false,
                        docked_only               : true,
-                       agent_can_request_control : true
+                       agent_can_request_control : true,
+                       confirmation_modal_body: surflyModalBody,
                    };
 
     Surfly.init(settings, function (initResult) {
@@ -334,9 +209,7 @@ function loadSurfly()
                             const {data, id, timestamp, clientId, member} = message;
 
                             if (data.type == 'ElevateToCobrowse' && data.bu == nicBusNumber && data.uniquePageId == localStorage.getItem(nicBusNumber + "-uniquePageId")) {
-                                window.nicChatContactId = data.contactId;
-
-                                createSurflySession(nicChatContactId, 'cobrowse');
+                                createSurflySession(data.contactId, 'cobrowse');
 
                                 console.log('Co-browsing session requested');
                                 console.log("Message ID: " + id);
@@ -367,9 +240,7 @@ function loadSurfly()
                             const {data, id, timestamp, clientId, member} = message;
 
                             if (data.type == 'ElevateToVideo' && data.bu == nicBusNumber && data.uniquePageId == localStorage.getItem(nicBusNumber + "-uniquePageId")) {
-                                window.nicChatContactId = data.contactId;
-
-                                createSurflySession(nicChatContactId, 'videochat');
+                                createSurflySession(data.contactId, 'videochat');
 
                                 console.log('Videochat session requested');
                                 console.log("Message ID: " + id);
