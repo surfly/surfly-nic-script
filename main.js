@@ -1,17 +1,41 @@
-/*
-Surfly NIC integration
-
-Expected variables
-
-    scaleDroneChannelId
-    nicBusNumber
-    nicChatPOC
-    clusterNiC
-    surflyWidgetKey
-    videoSignalerURL
-    chatSignalerURL
-    surflyModalTitle
-    surflyModalBody
+/**
+* Surfly NIC integration
+*
+* Make sure the following variables are initialized based on your configuration before importing this script
+*
+*     scaleDroneChannelId
+*     nicBusNumber
+*     nicChatPOC
+*     clusterNiC
+*     surflyWidgetKey
+*     videoSignalerURL
+*     chatSignalerURL
+*     surflyModalTitle
+*     surflyModalBody
+*
+* Example in HTML pages:
+*
+* <html>
+*     <head>
+*     ...
+*     </head>
+*     <body>
+*         ...
+*         <script>
+*             var scaleDroneChannelId = 'fygLrCqVZUYQZL6';
+*             var nicBusNumber        = '1809119';
+*             var nicChatPOC          = '1605d121-489c-4df4-83b1-334dbeb0a781u';
+*             var clusterNiC          = 'b99';
+*             var surflyWidgetKey     = '134f5fd2ac8842c0a1cd6062818yd2ac';
+*             var videoSignalerURL    = "https://home-b99.nice-incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Surfly_Signaler&bus_no=1534130&scriptId=64719900&skill_no=1197136&Guid=602b102c74-c935-4539-9f80-0827ab18918";
+*             var chatSignalerURL     = "https://home-b99.nice-incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Surfly_Signaler&bus_no=1534130&scriptId=64719900&skill_no=1197136&Guid=602b102c74-c935-4539-9f80-0827ab18918";
+*             var surflyModalTitle    = 'Start Videochat';
+*             var surflyModalBody     = 'By clicking Accept, an agent will automatically join you in a videochat session. You will be prompted to enable/disable your camera and mute/unmute your microphone. You can access your audio settings using the gear icon. You can end the videochat at any time, by clicking ✕ in the menu or by closing this tab in your browser.';
+*         ​</script>
+*         <script type="text/javascript" src="https://nic.surfly.com/surfly-nic-script.js"></script>
+*         ...
+*     ​</body>
+* </html>
 */
 
 let NicHomeURL = "https://home-" + clusterNiC + ".nice-incontact.com";
