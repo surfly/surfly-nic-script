@@ -7,9 +7,10 @@
  *     nicBusNumber
  *     nicChatPOC
  *     clusterNiC
- *     surflyWidgetKey
  *     videoSignalerURL
  *     chatSignalerURL
+ *     surflySettings
+ *     surflyWidgetKey
  *     surflyModalTitle
  *     surflyModalBody
  *
@@ -26,12 +27,14 @@
  *             var nicBusNumber        = '1809119';
  *             var nicChatPOC          = '1605d121-489c-4df4-83b1-334dbeb0a781u';
  *             var clusterNiC          = 'b99';
- *             var surflyWidgetKey     = '134f5fd2ac8842c0a1cd6062818yd2ac';
  *             var videoSignalerURL    = "https://home-b99.nice-incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Surfly_Signaler&bus_no=1534130&scriptId=64719900&skill_no=1197136&Guid=602b102c74-c935-4539-9f80-0827ab18918";
  *             var chatSignalerURL     = "https://home-b99.nice-incontact.com/inContact/Manage/Scripts/Spawn.aspx?scriptName=Surfly_Signaler&bus_no=1534130&scriptId=64719900&skill_no=1197136&Guid=602b102c74-c935-4539-9f80-0827ab18918";
+ *             var surflySettings      = { ... };
+ *             // The following variables can be passed as part of the surflySettings object. we keep supporting them for backward compatibility
+ *             var surflyWidgetKey     = '134f5fd2ac8842c0a1cd6062818yd2ac';
  *             var surflyModalTitle    = 'Start Videochat';
  *             var surflyModalBody     = 'By clicking Accept, an agent will automatically join you in a videochat session. You will be prompted to enable/disable your camera and mute/unmute your microphone. You can access your audio settings using the gear icon. You can end the videochat at any time, by clicking ✕ in the menu or by closing this tab in your browser.';
- *         ​</script>
+ * ​        </script>
  *         <script type="text/javascript" src="https://nic.surfly.com/surfly-nic-script.js"></script>
  *         ...
  *     ​</body>
@@ -39,6 +42,8 @@
  */
 
 let NicHomeURL = "https://home-" + clusterNiC + ".nice-incontact.com";
+
+var surflySettings = surflySettings || {};
 
 var chatSrc = document.createElement("script");
 chatSrc.src = NicHomeURL + "/inContact/ChatClient/js/embed.min.js";
@@ -112,7 +117,7 @@ function createVideochatSession() {
 	var videochatSession = Surfly.session({
 		block_until_agent_joins: false,
 		videochat_autostart: true,
-		videochat_start_fullscreen: true
+		videochat_start_fullscreen: true,
 	});
 	var surflyMetadata = {
 		"name": "Customer"
@@ -221,7 +226,11 @@ function loadSurfly() {
 		docked_only: true,
 		agent_can_request_control: true,
 		confirmation_modal_body: surflyModalBody,
+        ...surflySettings,
 	};
+    console.log(settings);
+
+    settings = Object.assign(settings, surflySettings);
 
 	Surfly.init(settings, function(initResult) {
 		if (initResult.success) {
