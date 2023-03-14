@@ -143,9 +143,7 @@ function createVideochatSession() {
 
 
 function createVideochatButton() {
-	Surfly.button({
-		support_button_position: 'bottomright'
-	});
+	Surfly.button();
 	var surflyIframe = document.getElementById("surfly-api-frame");
 	var surflyButton = surflyIframe.contentWindow.document.getElementsByClassName("surfly-button-visible")[0];
 	surflyButton.innerHTML = '<span>Start Videochat</span>';
@@ -225,6 +223,7 @@ function loadSurfly() {
 		password_required: false,
 		chat_enabled: false,
 		confirmation_modal_body: surflyModalBody,
+		support_button_position: 'bottomright',
         ...surflySettings,
 	};
 
