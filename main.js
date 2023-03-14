@@ -116,8 +116,8 @@ function endWorkItem(contactId) {
 function createVideochatSession() {
 	var videochatSession = Surfly.session({
 		block_until_agent_joins: false,
-		videochat_autostart: true,
-		videochat_start_fullscreen: true,
+		start_with_videochat_on: true,
+		start_with_fullscreen_videochat: true,
 	});
 	var surflyMetadata = {
 		"name": "Customer"
@@ -144,7 +144,7 @@ function createVideochatSession() {
 
 function createVideochatButton() {
 	Surfly.button({
-		position: 'bottomright'
+		support_button_position: 'bottomright'
 	});
 	var surflyIframe = document.getElementById("surfly-api-frame");
 	var surflyButton = surflyIframe.contentWindow.document.getElementsByClassName("surfly-button-visible")[0];
@@ -217,20 +217,16 @@ function loadSurfly() {
 	var settings = {
 		widget_key: surflyWidgetKey,
 		block_until_agent_joins: true,
-		auto_restore: false,
-		confirm_session_start: true,
-		hidden: false,
-		disable_end_redirect: true,
+		session_autorestore_enabled: false,
+		session_start_confirmation: true,
+		hide_support_button: false,
+		end_redirect_enabled: false,
 		private_session: true,
-		require_password: false,
-		docked_only: true,
-		agent_can_request_control: true,
+		password_required: false,
+		chat_enabled: false,
 		confirmation_modal_body: surflyModalBody,
         ...surflySettings,
 	};
-    console.log(settings);
-
-    settings = Object.assign(settings, surflySettings);
 
 	Surfly.init(settings, function(initResult) {
 		if (initResult.success) {
