@@ -230,6 +230,8 @@ function loadSurfly() {
 	Surfly.init(settings, function(initResult) {
 		if (initResult.success) {
 			if (!Surfly.isInsideSession) {
+				createVideochatSession();
+
 				const drone = new Scaledrone(scaleDroneChannelId);
 
 				drone.on('open', error => {
