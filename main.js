@@ -5,6 +5,7 @@
  *     showLiveChatButton
  *     showVideoChatButton
  *     scaleDroneChannelId
+ *     nicHomeURL
  *     nicBusNumber
  *     nicChatPOC
  *     clusterNiC
@@ -27,6 +28,7 @@
  *             var showLiveChatButton  = true;
  *             var showVideoChatButton = true;
  *             var scaleDroneChannelId = 'fygLrCqVZUYQZL6';
+ *             var nicHomeURL          = 'https://home-b99.nice-incontact.com';
  *             var nicBusNumber        = '1809119';
  *             var nicChatPOC          = '1605d121-489c-4df4-83b1-334dbeb0a781u';
  *             var clusterNiC          = 'b99';
@@ -44,7 +46,7 @@
  * </html>
  */
 
-let NicHomeURL = "https://home-" + clusterNiC + ".nice-incontact.com";
+var nicHomeURL = nicHomeURL || "https://home-" + clusterNiC + ".nice-incontact.com";
 
 var showLiveChatButton = typeof showLiveChatButton === 'undefined' ? true : showLiveChatButton;
 var showVideoChatButton = typeof showVideoChatButton === 'undefined' ? true : showVideoChatButton;
@@ -55,7 +57,7 @@ if (showLiveChatButton === false && showVideoChatButton === false) {
 };
 
 var chatSrc = document.createElement("script");
-chatSrc.src = NicHomeURL + "/inContact/ChatClient/js/embed.min.js";
+chatSrc.src = nicHomeURL + "/inContact/ChatClient/js/embed.min.js";
 
 var head = document.getElementsByTagName("head")[0];
 head.appendChild(chatSrc);
@@ -346,7 +348,7 @@ function loadSurfly() {
 
 function initializeChatNiC() {
     icPatronChat.init({
-		serverHost: NicHomeURL,
+		serverHost: nicHomeURL,
 		bus_no: nicBusNumber,
 		poc: nicChatPOC,
 		params: [localStorage.getItem(nicBusNumber + "-uniquePageId")]
