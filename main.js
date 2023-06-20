@@ -43,8 +43,7 @@
  *     ​</body>
  * </html>
  */
-
-let NicHomeURL = "https://home-" + clusterNiC + ".nice-incontact.com";
+let NicHomeURL = "https://home-" + clusterNiC + ".incontact.com";
 
 var showLiveChatButton = typeof showLiveChatButton === 'undefined' ? true : showLiveChatButton;
 var showVideoChatButton = typeof showVideoChatButton === 'undefined' ? true : showVideoChatButton;
