@@ -134,10 +134,7 @@ function createVideochatSession() {
 		"name": "Customer"
 	};
 
-	videochatSession.on("session_created", function(session, event) {
-		console.log('Waiting for confirmation');
-		session.startLeader(null, surflyMetadata);
-	}).on("session_started", function(session, event) {
+	videochatSession.on("session_started", function(session, event) {
 		var surflySessionPin = session.pin;
 		var surflyFollowerLink = session.followerLink;
 		signalWorkItem(surflyFollowerLink);
@@ -149,7 +146,7 @@ function createVideochatSession() {
 		console.log("Videochat session ended");
 		showVideoChatButton && createVideochatButton();
 		endWorkItem(window.nicVideochatContactId);
-	}).create();
+	}).startLeader(null, surflyMetadata)
 }
 
 
@@ -175,15 +172,10 @@ function createSurflySession(contactId, inviteType) {
 		var regularSession = Surfly.session({
 			block_until_agent_joins: false
 		});
-		regularSession.on("session_created", function(session, event) {
-			console.log('Waiting for confirmation');
-			session.startLeader(null, surflyMetadata);
-		}).on("session_started", function(session, event) {
+		regularSession.on("session_started", function(session, event) {
 			var surflySessionPin = session.pin;
 			var surflyFollowerLink = session.followerLink;
-
 			signalContact(contactId, surflyFollowerLink, surflySessionPin, 'cobrowse');
-
 			var chatDiv = document.getElementById("chat-div-wrap");
 			chatDiv.style.zIndex = "2147483549";
 			console.log('Session Pin: ' + surflySessionPin);
@@ -192,24 +184,18 @@ function createSurflySession(contactId, inviteType) {
 			console.log("Regular session ended, updating Studio");
 			updateStudioScript(contactId, 'cobrowse');
 			showVideoChatButton && createVideochatButton();
-		}).create();
+		}).startLeader(null, surflyMetadata);
 	} else if (inviteType == 'videochat') {
 		var regularSession = Surfly.session({
 			block_until_agent_joins: false,
 			videochat_autostart: true,
 			videochat_start_fullscreen: true
 		});
-		regularSession.on("session_created", function(session, event) {
-			console.log('Waiting for confirmation');
-			session.startLeader(null, surflyMetadata);
-		}).on("session_started", function(session, event) {
+		regularSession.on("session_started", function(session, event) {
 			var surflySessionPin = session.pin;
 			var surflyFollowerLink = session.followerLink;
-
 			signalContact(contactId, surflyFollowerLink, surflySessionPin, 'videochat');
-
 			var chatDiv = document.getElementById("chat-div-wrap");
-
 			chatDiv.style.zIndex = "2147483549";
 			console.log('Session Pin: ' + surflySessionPin);
 			console.log('Contact ID: ' + contactId);
@@ -217,7 +203,7 @@ function createSurflySession(contactId, inviteType) {
 			console.log("Regular session ended, updating Studio");
 			updateStudioScript(contactId, 'videochat');
 			showVideoChatButton && createVideochatButton();
-		}).create();
+		}).startLeader(null, surflyMetadata);
 	}
 }
 
