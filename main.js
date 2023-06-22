@@ -5,6 +5,7 @@
  *     showLiveChatButton
  *     showVideoChatButton
  *     scaleDroneChannelId
+ *     nicHomeURL
  *     nicBusNumber
  *     nicChatPOC
  *     clusterNiC
@@ -27,6 +28,7 @@
  *             var showLiveChatButton  = true;
  *             var showVideoChatButton = true;
  *             var scaleDroneChannelId = 'fygLrCqVZUYQZL6';
+ *             var nicHomeURL          = 'https://home-b99.nice-incontact.com';
  *             var nicBusNumber        = '1809119';
  *             var nicChatPOC          = '1605d121-489c-4df4-83b1-334dbeb0a781u';
  *             var clusterNiC          = 'b99';
@@ -44,7 +46,7 @@
  * </html>
  */
 
-let NicHomeURL = "https://home-" + clusterNiC + ".nice-incontact.com";
+var nicHomeURL = nicHomeURL || "https://home-" + clusterNiC + ".nice-incontact.com";
 
 var showLiveChatButton = typeof showLiveChatButton === 'undefined' ? true : showLiveChatButton;
 var showVideoChatButton = typeof showVideoChatButton === 'undefined' ? true : showVideoChatButton;
@@ -55,7 +57,7 @@ if (showLiveChatButton === false && showVideoChatButton === false) {
 };
 
 var chatSrc = document.createElement("script");
-chatSrc.src = NicHomeURL + "/inContact/ChatClient/js/embed.min.js";
+chatSrc.src = nicHomeURL + "/inContact/ChatClient/js/embed.min.js";
 
 var head = document.getElementsByTagName("head")[0];
 head.appendChild(chatSrc);
@@ -132,10 +134,7 @@ function createVideochatSession() {
 		"name": "Customer"
 	};
 
-	videochatSession.on("session_created", function(session, event) {
-		console.log('Waiting for confirmation');
-		session.startLeader(null, surflyMetadata);
-	}).on("session_started", function(session, event) {
+	videochatSession.on("session_started", function(session, event) {
 		var surflySessionPin = session.pin;
 		var surflyFollowerLink = session.followerLink;
 		signalWorkItem(surflyFollowerLink);
@@ -147,7 +146,7 @@ function createVideochatSession() {
 		console.log("Videochat session ended");
 		showVideoChatButton && createVideochatButton();
 		endWorkItem(window.nicVideochatContactId);
-	}).create();
+	}).startLeader(null, surflyMetadata)
 }
 
 
@@ -173,15 +172,10 @@ function createSurflySession(contactId, inviteType) {
 		var regularSession = Surfly.session({
 			block_until_agent_joins: false
 		});
-		regularSession.on("session_created", function(session, event) {
-			console.log('Waiting for confirmation');
-			session.startLeader(null, surflyMetadata);
-		}).on("session_started", function(session, event) {
+		regularSession.on("session_started", function(session, event) {
 			var surflySessionPin = session.pin;
 			var surflyFollowerLink = session.followerLink;
-
 			signalContact(contactId, surflyFollowerLink, surflySessionPin, 'cobrowse');
-
 			var chatDiv = document.getElementById("chat-div-wrap");
 			chatDiv.style.zIndex = "2147483549";
 			console.log('Session Pin: ' + surflySessionPin);
@@ -190,24 +184,18 @@ function createSurflySession(contactId, inviteType) {
 			console.log("Regular session ended, updating Studio");
 			updateStudioScript(contactId, 'cobrowse');
 			showVideoChatButton && createVideochatButton();
-		}).create();
+		}).startLeader(null, surflyMetadata);
 	} else if (inviteType == 'videochat') {
 		var regularSession = Surfly.session({
 			block_until_agent_joins: false,
 			videochat_autostart: true,
 			videochat_start_fullscreen: true
 		});
-		regularSession.on("session_created", function(session, event) {
-			console.log('Waiting for confirmation');
-			session.startLeader(null, surflyMetadata);
-		}).on("session_started", function(session, event) {
+		regularSession.on("session_started", function(session, event) {
 			var surflySessionPin = session.pin;
 			var surflyFollowerLink = session.followerLink;
-
 			signalContact(contactId, surflyFollowerLink, surflySessionPin, 'videochat');
-
 			var chatDiv = document.getElementById("chat-div-wrap");
-
 			chatDiv.style.zIndex = "2147483549";
 			console.log('Session Pin: ' + surflySessionPin);
 			console.log('Contact ID: ' + contactId);
@@ -215,7 +203,7 @@ function createSurflySession(contactId, inviteType) {
 			console.log("Regular session ended, updating Studio");
 			updateStudioScript(contactId, 'videochat');
 			showVideoChatButton && createVideochatButton();
-		}).create();
+		}).startLeader(null, surflyMetadata);
 	}
 }
 
@@ -346,7 +334,7 @@ function loadSurfly() {
 
 function initializeChatNiC() {
     icPatronChat.init({
-		serverHost: NicHomeURL,
+		serverHost: nicHomeURL,
 		bus_no: nicBusNumber,
 		poc: nicChatPOC,
 		params: [localStorage.getItem(nicBusNumber + "-uniquePageId")]
