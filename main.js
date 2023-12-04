@@ -47,6 +47,8 @@
 */
 
 const config = {
+	signalURL: "https://nic.surf.ly/signal",
+	workItemURL: "https://nic.surf.ly/work-item",
 	nicHomeURL: nicHomeURL || "https://home-" + clusterNiC + ".nice-incontact.com",
 	showLiveChatButton: typeof showLiveChatButton === 'undefined' ? true : showLiveChatButton,
 	showVideoChatButton: typeof showVideoChatButton === 'undefined' ? true : showVideoChatButton,
@@ -94,13 +96,61 @@ function initializeChatNiC() {
 	console.log('Initializing NiC');
 }
 
-function signalContact(contactId, followerLink, sessionPin, type) {
-	var url = new URL(chatSignalerURL);
-	url.searchParams.set('p1', contactId);
-	url.searchParams.set('p2', followerLink);
-	url.searchParams.set('p3', sessionPin);
-	url.searchParams.set('p4', type);
-	fetch(url);
+function signal(nicContactID, followerLink, pin, type) {
+	return new Promise((resolve, reject) => {
+		try {
+			fetch(config.signalURL, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					nic_contact_id: nicContactID,
+					follower_link: followerLink,
+					pin: pin,
+					type: type,
+				}),
+			}).then(response => {
+				return response.json();
+			}).then(result => {
+				console.log("Success:", result);
+				resolve(result);
+			}).catch(error => {
+				console.error("Error:", error);
+				reject(error);
+			});
+		} catch (error) {
+			console.error("Error:", error);
+			reject(error);
+		}
+	});
+}
+
+function createWorkItem(followerLink) {
+	return new Promise((resolve, reject) => {
+		try {
+			fetch(config.workItemURL, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					follower_link: followerLink,
+				}),
+			}).then(response => {
+				return response.json();
+			}).then(result => {
+				console.log("Success:", result);
+				resolve(result);
+			}).catch(error => {
+				console.error("Error:", error);
+				reject(error);
+			});
+		} catch (error) {
+			console.error("Error:", error);
+			reject(error);
+		}
+	});
 }
 
 
@@ -110,14 +160,6 @@ function updateStudioScript(contactId, type) {
 	url.searchParams.set('p2', 'NA');
 	url.searchParams.set('p3', `sessionended-${type}`);
 	url.searchParams.set('p4', 'NA');
-	fetch(url);
-}
-
-
-function signalWorkItem(followerLink) {
-	var url = new URL(videoSignalerURL);
-	url.searchParams.set('p1', 'startWorkItem');
-	url.searchParams.set('p2', followerLink);
 	fetch(url);
 }
 
@@ -157,7 +199,7 @@ function createVideochatSession() {
 	videochatSession.on("session_started", function(session, event) {
 		var surflySessionPin = session.pin;
 		var surflyFollowerLink = session.followerLink;
-		signalWorkItem(surflyFollowerLink);
+		createWorkItem(surflyFollowerLink);
 		console.log("Videochat session started");
 		console.log('Session Pin: ' + surflySessionPin);
 	}).on("viewer_joined", function(session, event) {
@@ -181,7 +223,7 @@ function createSurflySession(contactId, inviteType) {
 		regularSession.on("session_started", function(session, event) {
 			var surflySessionPin = session.pin;
 			var surflyFollowerLink = session.followerLink;
-			signalContact(contactId, surflyFollowerLink, surflySessionPin, 'cobrowse');
+			signal(contactId, surflyFollowerLink, surflySessionPin, 'cobrowse');
 			var chatDiv = document.getElementById("chat-div-wrap");
 			chatDiv.style.zIndex = "2147483549";
 			console.log('Session Pin: ' + surflySessionPin);
@@ -200,7 +242,7 @@ function createSurflySession(contactId, inviteType) {
 		regularSession.on("session_started", function(session, event) {
 			var surflySessionPin = session.pin;
 			var surflyFollowerLink = session.followerLink;
-			signalContact(contactId, surflyFollowerLink, surflySessionPin, 'videochat');
+			signal(contactId, surflyFollowerLink, surflySessionPin, 'videochat');
 			var chatDiv = document.getElementById("chat-div-wrap");
 			chatDiv.style.zIndex = "2147483549";
 			console.log('Session Pin: ' + surflySessionPin);
