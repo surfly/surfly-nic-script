@@ -418,7 +418,7 @@ function getOrCreateUniqueClientID() {
 		let randomString = Math.random().toString(36).substring(7);
 		let dateNow = Date.now();
 		uniqueClientID = randomString + "-" + dateNow;
-		localStorage.setItem(uniqueClientIDKey, uniquePageId);
+		localStorage.setItem(uniqueClientIDKey, uniqueClientID);
 	}
 
 	return uniqueClientID;
