@@ -47,23 +47,23 @@
 */
 
 const config = {
-	signalURL: "https://nic.surf.ly/signal",
-	workItemURL: "https://nic.surf.ly/work-item",
+	signalURL: "https://admin-api-backend-ef6aeff35287.herokuapp.com/signal",
+	workItemURL: "https://admin-api-backend-ef6aeff35287.herokuapp.com/work-item",
 	nicHomeURL: nicHomeURL || "https://home-" + clusterNiC + ".nice-incontact.com",
 	showLiveChatButton: typeof showLiveChatButton === 'undefined' ? true : showLiveChatButton,
 	showVideoChatButton: typeof showVideoChatButton === 'undefined' ? true : showVideoChatButton,
 	surflySettings: typeof surflySettings === 'undefined' ? {} : surflySettings,
-} 
+}
 
 function initialize(){
 	if (config.showLiveChatButton === false && config.showVideoChatButton === false) {
 		throw new Error('Surfly NIC integration: No buttons to show');
 	};
-	
+
 	loadChatNiC().then(() => {
 		loadScaledrone().then(() => {
 			initScaledrone();
-			
+
 			loadSurfly();
 			initSurfly();
 		});
@@ -74,15 +74,15 @@ function initialize(){
 function loadChatNiC() {
 	var chatSrc = document.createElement("script");
 	chatSrc.src = nicHomeURL + "/inContact/ChatClient/js/embed.min.js";
-	
+
 	var head = document.getElementsByTagName("head")[0];
 	head.appendChild(chatSrc);
-	
+
 	return new Promise((resolve, reject) => {
 		chatSrc.onload = function() {
 			resolve();
 		}
-	});	
+	});
 }
 
 function initializeChatNiC() {
@@ -92,7 +92,7 @@ function initializeChatNiC() {
 		poc: nicChatPOC,
 		params: [getOrCreateUniqueClientID()]
 	});
-	
+
 	console.log('Initializing NiC');
 }
 
@@ -195,7 +195,7 @@ function createVideochatSession() {
 	var surflyMetadata = {
 		"name": "Customer"
 	};
-	
+
 	videochatSession.on("session_started", function(session, event) {
 		var surflySessionPin = session.pin;
 		var surflyFollowerLink = session.followerLink;
@@ -286,7 +286,7 @@ function initSurfly() {
 		support_button_position: 'bottomright',
 		...config.surflySettings,
 	};
-	
+
 	Surfly.init(settings, function(initResult) {
 		if (initResult.success) {
 			if (!Surfly.isInsideSession) {
@@ -306,10 +306,10 @@ function initSurfly() {
 function loadScaledrone() {
 	var scaledroneSrc = document.createElement("script");
 	scaledroneSrc.src = "https://cdn.scaledrone.com/scaledrone.min.js";
-	
+
 	var head = document.getElementsByTagName("head")[0];
 	head.appendChild(scaledroneSrc);
-	
+
 	return new Promise((resolve, reject) => {
 		scaledroneSrc.onload = function() {
 			resolve();
@@ -323,9 +323,9 @@ function initScaledrone() {
 		if (error) {
 			return console.error(error);
 		}
-		
+
 		console.log("Connection has been opened");
-		
+
 		const cobrowseRoom = drone.subscribe('cobrowse');
 		cobrowseRoom.on('open', error => {
 			if (error) {
@@ -334,7 +334,7 @@ function initScaledrone() {
 				console.log("Cobrowse room has been opened");
 			}
 		})
-		
+
 		cobrowseRoom.on('message', message => {
 			const {
 				data,
@@ -343,27 +343,27 @@ function initScaledrone() {
 				clientId,
 				member
 			} = message;
-			
+
 			if (data.type == 'ElevateToCobrowse' && data.bu == nicBusNumber && data.uniquePageId == getOrCreateUniqueClientID()) {
 				createSurflySession(data.contactId, 'cobrowse');
-				
+
 				console.log('Co-browsing session requested');
 				console.log("Message ID: " + id);
 				console.log("Timestamp: " + timestamp);
 				console.log(data);
 			} else if (data.type == 'sessionended' && data.bu == nicBusNumber && data.uniquePageId == getOrCreateUniqueClientID()) {
-				
+
 				Surfly.listSessions().forEach(function(session) {
 					session.end();
 				});
-				
+
 				console.log("NiC chat ended");
 				console.log("Message ID: " + id);
 				console.log("Timestamp: " + timestamp);
 				console.log(data);
 			}
 		});
-		
+
 		const videoRoom = drone.subscribe('videochat');
 		videoRoom.on('open', error => {
 			if (error) {
@@ -372,7 +372,7 @@ function initScaledrone() {
 				console.log("Videochat room has been opened");
 			}
 		})
-		
+
 		videoRoom.on('message', message => {
 			const {
 				data,
@@ -381,10 +381,10 @@ function initScaledrone() {
 				clientId,
 				member
 			} = message;
-			
+
 			if (data.type == 'ElevateToVideo' && data.bu == nicBusNumber && data.uniquePageId == getOrCreateUniqueClientID()) {
 				createSurflySession(data.contactId, 'videochat');
-				
+
 				console.log('Videochat session requested');
 				console.log("Message ID: " + id);
 				console.log("Timestamp: " + timestamp);
@@ -392,19 +392,19 @@ function initScaledrone() {
 			}
 		});
 	});
-	
+
 	drone.on('error', error => {
 		console.log("An error has occurred with the connection", error);
 	});
-	
+
 	drone.on('close', event => {
 		console.log("Connection has been closed", event);
 	})
-	
+
 	drone.on('disconnect', event => {
 		console.log("User has disconnected, Scaledrone will try to reconnect soon", event);
 	})
-	
+
 	drone.on('reconnect', event => {
 		console.log("User has been reconnected", event);
 	});
@@ -420,7 +420,7 @@ function getOrCreateUniqueClientID() {
 		uniqueClientID = randomString + "-" + dateNow;
 		localStorage.setItem(uniqueClientIDKey, uniquePageId);
 	}
-	
+
 	return uniqueClientID;
 }
 
